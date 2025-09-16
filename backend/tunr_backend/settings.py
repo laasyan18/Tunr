@@ -31,6 +31,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'accounts',  # Your authentication app
+    'rest_framework.authtoken',
+    'tunr_backend',
+    'movies',
 ]
 
 MIDDLEWARE = [
@@ -101,9 +104,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings for React
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",      # React dev server
+    "http://127.0.0.1:3000",     # Alternative React dev server
+    "http://localhost:8000",      # Add this for consistency
+    "http://127.0.0.1:8000",
+]
+
+CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+
 CORS_ALLOW_CREDENTIALS = True
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1 week
@@ -114,9 +126,14 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ],
+    #'DEFAULT_PERMISSION_CLASSES': [
+     #   'rest_framework.permissions.IsAuthenticated',
+    #],
 }
+
+OMDB_API_KEY = 'eada15a9'
+
+SPOTIFY_CLIENT_ID = '09d32991c5e0478cb1c5d3e319569e5f'
+SPOTIFY_CLIENT_SECRET = '4689f3f85c5c45b695b9f204f3cc2125'

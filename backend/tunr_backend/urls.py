@@ -1,42 +1,13 @@
-"""
-URL configuration for tunr_backend project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+# tunr_backend/urls.py
 from django.contrib import admin
 from django.urls import path, include
-from django.http import JsonResponse
-
-def home_view(request):
-    return JsonResponse({
-        'message': 'Welcome to Tunr API! 🎵🎬',
-        'version': '1.0',
-        'endpoints': {
-            'admin': '/admin/',
-            'auth': '/api/auth/',
-            'signup': '/api/auth/signup/',
-            'login': '/api/auth/login/',
-            'logout': '/api/auth/logout/',
-            'profile': '/api/auth/profile/',
-            'check-auth': '/api/auth/check-auth/'
-        }
-    })
+from music.views import spotify_callback
 
 urlpatterns = [
-    path('', home_view, name='home'),  # Add this line
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
+    path('api/movies/', include('movies.urls')),  # Add this line
+    path('spotify/', include('music.urls')),  # Spotify routes
+    path('callback/', spotify_callback, name='spotify_callback'),  # For the callback
+    path('api/spotify/', include('music.urls')),
 ]
-
-
