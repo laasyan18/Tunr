@@ -12,7 +12,6 @@ def search_movies(request):
     if not query:
         return JsonResponse({'error': 'query parameter is required'}, status=400)
     
-    # Your OMDb API key
     omdb_api_key = settings.OMDB_API_KEY
     url = f'http://www.omdbapi.com/?apikey={omdb_api_key}&s={query}&type=movie'
     

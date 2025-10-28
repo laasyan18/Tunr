@@ -1,40 +1,32 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-// Animation keyframes
-const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
-const float = keyframes`
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-`;
-
-// Main container with gradient background
-const WelcomeContainer = styled.div`
+// Full-screen cinematic container
+const CinematicContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--milky-way) 0%, var(--background-surface) 50%, var(--galaxy) 100%);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-lg);
-  font-family: var(--font-primary);
-  position: relative;
   overflow: hidden;
+  background: var(--background-primary);
+`;
+
+// Cinematic background image with multiple fallbacks
+const BackgroundImage = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('https://images.unsplash.com/photo-1489599512685-268b27577a33?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
   
+  /* Fallback images if first doesn't load */
   &::before {
     content: '';
     position: absolute;
@@ -42,138 +34,111 @@ const WelcomeContainer = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 80%, rgba(8,31,92,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255,249,240,0.1) 0%, transparent 50%);
+    background-image: url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2025&q=80');
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
   }
 `;
 
-// Central welcome card
-const WelcomeCard = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 249, 240, 0.2);
-  padding: var(--spacing-3xl);
-  border-radius: 20px;
-  text-align: center;
-  max-width: 700px;
-  width: 100%;
-  box-shadow: 0 20px 40px rgba(8, 31, 92, 0.15);
-  position: relative;
+// Professional dark overlay
+const BackgroundOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 15, 35, 0.75) 0%,
+    rgba(26, 31, 58, 0.65) 50%,
+    rgba(36, 43, 74, 0.75) 100%
+  );
   z-index: 1;
-  animation: ${fadeInUp} 0.8s ease-out;
 `;
 
-// Large animated title
-const Title = styled.h1`
-  color: var(--text-primary);
-  font-size: 4rem;
-  font-weight: 800;
-  margin-bottom: var(--spacing-md);
-  font-family: var(--font-heading);
-  background: linear-gradient(135deg, var(--galaxy), var(--accent-primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1.1;
-  
-  @media (max-width: 768px) {
-    font-size: 3rem;
-  }
-`;
-
-// Elegant subtitle
-const Subtitle = styled.p`
-  color: var(--text-secondary);
-  font-size: 1.4rem;
-  margin-bottom: var(--spacing-2xl);
-  font-family: var(--font-heading);
-  line-height: 1.6;
-  font-weight: 300;
-  
-  @media (max-width: 768px) {
-    font-size: 1.2rem;
-  }
-`;
-
-// Features grid with hover effects
-const FeaturesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-xl);
-  margin: var(--spacing-3xl) 0;
-`;
-
-const FeatureCard = styled.div`
-  background: var(--background-primary);
-  border-radius: 16px;
-  padding: var(--spacing-xl);
-  text-align: center;
-  border: 2px solid transparent;
-  transition: all 0.4s ease;
+// Central content card with glassmorphism
+const ContentCard = styled.div`
   position: relative;
-  overflow: hidden;
-  animation: ${fadeInUp} 0.8s ease-out ${props => props.delay || '0.2s'} both;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s ease;
-  }
+  z-index: 2;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  background: rgba(26, 31, 58, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(102, 164, 255, 0.2);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-6xl) var(--spacing-4xl);
+  box-shadow: var(--shadow-2xl);
+  transition: var(--transition-normal);
   
   &:hover {
-    transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 15px 35px rgba(8, 31, 92, 0.2);
-    border-color: var(--accent-primary);
-    
-    &::before {
-      left: 100%;
-    }
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow);
   }
 `;
 
-const FeatureIcon = styled.div`
+// Movie/Music icon placeholder
+const MediaIcon = styled.div`
+  width: 120px;
+  height: 120px;
+  margin: 0 auto var(--spacing-4xl);
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-2xl);
+  border: 2px solid var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 3rem;
-  margin-bottom: var(--spacing-md);
-  animation: ${float} 3s ease-in-out infinite;
-  animation-delay: ${props => props.delay || '0s'};
+  color: var(--accent-primary);
+  box-shadow: var(--shadow-glow);
+  transition: var(--transition-normal);
+  
+  &:hover {
+    transform: scale(1.05);
+    background: rgba(59, 130, 246, 0.3);
+  }
 `;
 
-const FeatureTitle = styled.h3`
-  color: var(--text-primary);
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: var(--spacing-sm);
+// Hero title
+const HeroTitle = styled.h1`
   font-family: var(--font-heading);
-`;
-
-const FeatureDescription = styled.p`
-  color: var(--text-tertiary);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: 0;
-  font-family: var(--font-heading);
-`;
-
-// Stunning call-to-action button
-const StartButton = styled.button`
-  background: var(--accent-gradient);
-  color: var(--milky-way);
-  border: none;
-  padding: var(--spacing-lg) var(--spacing-3xl);
-  border-radius: 50px;
-  font-size: 1.3rem;
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+`;
+
+// Hero subtitle
+const HeroSubtitle = styled.p`
+  font-family: var(--font-body);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-6xl);
+  opacity: 0.9;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+`;
+
+// Call-to-action button
+const CTAButton = styled.button`
+  font-family: var(--font-ui);
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: var(--spacing-xl) var(--spacing-6xl);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  font-family: var(--font-primary);
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(8, 31, 92, 0.3);
   
   &::before {
     content: '';
@@ -183,12 +148,12 @@ const StartButton = styled.button`
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s ease;
+    transition: left 0.6s ease;
   }
   
   &:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 35px rgba(8, 31, 92, 0.4);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow);
     
     &::before {
       left: 100%;
@@ -196,92 +161,125 @@ const StartButton = styled.button`
   }
   
   &:active {
-    transform: translateY(-1px) scale(1.02);
+    transform: translateY(-1px);
   }
 `;
 
-// Decorative elements
-const DecorativeCircle = styled.div`
+// Bottom event information section
+const EventSection = styled.div`
   position: absolute;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(8,31,92,0.1), rgba(255,249,240,0.1));
-  animation: ${float} 6s ease-in-out infinite;
+  bottom: var(--spacing-4xl);
+  left: var(--spacing-4xl);
+  right: var(--spacing-4xl);
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
   
-  &:nth-child(1) {
-    width: 120px;
-    height: 120px;
-    top: 10%;
-    right: 10%;
-    animation-delay: -2s;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    align-items: center;
+    text-align: center;
+    bottom: var(--spacing-2xl);
+    left: var(--spacing-lg);
+    right: var(--spacing-lg);
+  }
+`;
+
+// Event information
+const EventInfo = styled.div`
+  background: rgba(26, 31, 58, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(102, 164, 255, 0.2);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  
+  h3 {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
   }
   
-  &:nth-child(2) {
-    width: 80px;
-    height: 80px;
-    bottom: 20%;
-    left: 15%;
-    animation-delay: -4s;
+  p {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    margin: 0;
+    opacity: 0.8;
   }
+`;
+
+// Register button
+const RegisterButton = styled.button`
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  font-weight: 500;
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  background: transparent;
+  color: var(--accent-primary);
+  border: 2px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  backdrop-filter: blur(10px);
   
-  &:nth-child(3) {
-    width: 100px;
-    height: 100px;
-    top: 50%;
-    left: 5%;
-    animation-delay: -1s;
+  &:hover {
+    background: var(--accent-primary);
+    color: var(--text-inverse);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
   }
 `;
 
 const WelcomePage = () => {
   const navigate = useNavigate();
 
-  const handleStartExploring = () => {
+  const handleGetStarted = () => {
     navigate('/home');
   };
 
+  const handleRegister = () => {
+    navigate('/signup');
+  };
+
   return (
-    <WelcomeContainer>
-      <DecorativeCircle />
-      <DecorativeCircle />
-      <DecorativeCircle />
+    <CinematicContainer>
+      <BackgroundImage />
+      <BackgroundOverlay />
       
-      <WelcomeCard>
-        <Title>Welcome to Tunr! </Title>
-        <Subtitle>
-          Your personalized gateway to discovering the perfect harmony between cinema and music
-        </Subtitle>
+      <ContentCard>
+        <MediaIcon>
+          🎬
+        </MediaIcon>
         
-        <FeaturesGrid>
-          <FeatureCard delay="0.2s">
-            <FeatureIcon delay="0s">🎬</FeatureIcon>
-            <FeatureTitle>Discover Movies</FeatureTitle>
-            <FeatureDescription>
-              Explore thousands of films from around the world with detailed information and reviews
-            </FeatureDescription>
-          </FeatureCard>
-          
-          <FeatureCard delay="0.4s">
-            <FeatureIcon delay="1s">🎵</FeatureIcon>
-            <FeatureTitle>Connect with Music</FeatureTitle>
-            <FeatureDescription>
-              Find the perfect soundtracks and musical stories that enhance your viewing experience
-            </FeatureDescription>
-          </FeatureCard>
-          
-          <FeatureCard delay="0.6s">
-            <FeatureIcon delay="2s">📚</FeatureIcon>
-            <FeatureTitle>Build Your Library</FeatureTitle>
-            <FeatureDescription>
-              Create your personal collection and share your discoveries with fellow enthusiasts
-            </FeatureDescription>
-          </FeatureCard>
-        </FeaturesGrid>
+        <HeroTitle>
+          Exploring The Best of Film and Music
+        </HeroTitle>
         
-        <StartButton onClick={handleStartExploring}>
-          Begin Your Journey ✨
-        </StartButton>
-      </WelcomeCard>
-    </WelcomeContainer>
+        <HeroSubtitle>
+          Join TUNR to explore curated playlists and movie recommendations tailored just for you. Elevate your entertainment adventures with us!
+        </HeroSubtitle>
+        
+        <CTAButton onClick={handleGetStarted}>
+          Get Started Now
+        </CTAButton>
+      </ContentCard>
+      
+      <EventSection>
+        <EventInfo>
+          <h3>Cinematic Harmony Night</h3>
+          <p>06 Nov 2025, 11:45 am - 1:45 pm</p>
+          <p>TUNR Studio Theater, Los Angeles, CA 90012, USA</p>
+        </EventInfo>
+        
+        <RegisterButton onClick={handleRegister}>
+          Register Now
+        </RegisterButton>
+      </EventSection>
+    </CinematicContainer>
   );
 };
 

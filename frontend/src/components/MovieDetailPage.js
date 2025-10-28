@@ -1,22 +1,33 @@
 // MovieDetailPage.js - Complete with Reviews
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useParams } from 'react-router-dom';
 
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
 const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--spacing-xl);
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--galaxy-bg) 0%, #0a1942 50%, #081838 100%);
+  min-height: 100vh;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  color: var(--galaxy-text-primary);
   font-family: var(--font-primary);
-  background: var(--background-primary);
+  animation: ${fadeIn} 0.6s ease-out;
+  width: 100%;
 `;
 
 const MovieHeader = styled.div`
   display: grid;
-  grid-template-columns: 230px 1fr;
-  gap: var(--spacing-2xl);
+  grid-template-columns: 280px 1fr;
+  gap: var(--spacing-3xl);
   margin-bottom: var(--spacing-3xl);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  padding: var(--spacing-2xl);
+  border-radius: var(--border-radius-large);
+  border: 1px solid rgba(102, 126, 234, 0.2);
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -26,12 +37,13 @@ const MovieHeader = styled.div`
 
 const MoviePoster = styled.img`
   width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  border-radius: var(--border-radius-large);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   transition: transform 0.3s ease;
+  border: 2px solid rgba(102, 126, 234, 0.2);
   
   &:hover {
-    transform: scale(1.02);
+    transform: scale(1.03);
   }
 `;
 
@@ -42,17 +54,21 @@ const MovieInfo = styled.div`
 `;
 
 const MovieTitle = styled.h1`
-  font-family: var(--font-heading);
-  font-size: 2.5rem;
+  font-family: var(--font-primary);
+  font-size: 2.75rem;
   font-weight: 700;
   margin: 0;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, #ffffff 0%, #e8ecf4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1.1;
+  letter-spacing: -0.022em;
 `;
 
 const MovieYear = styled.span`
-  color: var(--text-secondary);
-  font-size: 1.125rem;
+  color: var(--galaxy-text-secondary);
+  font-size: 1.25rem;
   font-weight: 400;
 `;
 
@@ -68,11 +84,14 @@ const Stat = styled.div`
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  color: var(--galaxy-text-secondary);
+  font-size: 0.95rem;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius);
   
   .icon {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 `;
 
@@ -83,31 +102,31 @@ const UserActions = styled.div`
   flex-wrap: wrap;
   margin: var(--spacing-xl) 0;
   padding: var(--spacing-lg) 0;
-  border-top: 1px solid var(--border-primary);
-  border-bottom: 1px solid var(--border-primary);
+  border-top: 1px solid rgba(102, 126, 234, 0.2);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
 `;
 
 const ActionButton = styled.button`
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-radius: 20px;
-  border: 1px solid ${props => props.active ? 'var(--accent-primary)' : 'var(--border-primary)'};
-  background: ${props => props.active ? 'var(--accent-primary)' : 'transparent'};
-  color: ${props => props.active ? 'white' : 'var(--text-primary)'};
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--border-radius-full);
+  border: 1px solid ${props => props.active ? 'transparent' : 'rgba(102, 126, 234, 0.3)'};
+  background: ${props => props.active ? 'var(--accent-gradient)' : 'rgba(255, 255, 255, 0.05)'};
+  color: ${props => props.active ? 'white' : 'var(--galaxy-text-primary)'};
   cursor: pointer;
   font-family: var(--font-primary);
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   font-weight: 500;
   transition: all 0.3s ease;
   
   &:hover {
-    background: var(--accent-primary);
+    background: var(--accent-gradient);
     color: white;
-    border-color: var(--accent-primary);
+    border-color: transparent;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
   }
 `;
 
@@ -122,7 +141,7 @@ const StarButton = styled.button`
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: ${props => props.filled ? '#FFD700' : 'var(--border-primary)'};
+  color: ${props => props.filled ? '#FFD700' : 'rgba(102, 126, 234, 0.3)'};
   transition: all 0.2s ease;
   padding: 2px;
   
@@ -135,37 +154,41 @@ const StarButton = styled.button`
 const ReviewSection = styled.div`
   margin-top: var(--spacing-3xl);
   padding-top: var(--spacing-3xl);
-  border-top: 2px solid var(--border-primary);
+  border-top: 2px solid rgba(102, 126, 234, 0.2);
 `;
 
 const ReviewForm = styled.div`
-  background: var(--background-surface);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
   border-radius: var(--border-radius-large);
-  padding: var(--spacing-xl);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  padding: var(--spacing-2xl);
   margin-bottom: var(--spacing-2xl);
 `;
 
 const ReviewTextarea = styled.textarea`
   width: 100%;
-  min-height: 120px;
+  min-height: 140px;
   padding: var(--spacing-lg);
-  border: 1px solid var(--border-primary);
+  border: 1px solid rgba(102, 126, 234, 0.3);
   border-radius: var(--border-radius);
-  background: var(--background-primary);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--galaxy-text-primary);
   font-family: var(--font-primary);
   font-size: 1rem;
   line-height: 1.6;
   resize: vertical;
+  transition: all 0.3s ease;
   
   &:focus {
     outline: none;
-    border-color: var(--accent-primary);
+    border-color: rgba(102, 126, 234, 0.6);
+    background: rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
   
   &::placeholder {
-    color: var(--text-tertiary);
+    color: var(--galaxy-text-secondary);
   }
 `;
 
@@ -178,27 +201,29 @@ const ReviewActions = styled.div`
 
 const CharacterCount = styled.span`
   font-size: 0.875rem;
-  color: var(--text-tertiary);
+  color: var(--galaxy-text-secondary);
 `;
 
 const PostButton = styled.button`
-  padding: var(--spacing-md) var(--spacing-xl);
-  background: var(--accent-primary);
+  padding: var(--spacing-md) var(--spacing-2xl);
+  background: var(--accent-gradient);
   color: white;
   border: none;
-  border-radius: 25px;
+  border-radius: var(--border-radius-full);
   font-family: var(--font-primary);
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
   
   &:hover {
-    background: var(--accent-secondary);
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
   }
   
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
   }
@@ -211,10 +236,19 @@ const ReviewsList = styled.div`
 `;
 
 const ReviewCard = styled.div`
-  background: var(--background-surface);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
   border-radius: var(--border-radius-large);
   padding: var(--spacing-xl);
-  border-left: 4px solid var(--accent-primary);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-left: 4px solid var(--accent-gradient);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateX(4px);
+  }
 `;
 
 const ReviewHeader = styled.div`
@@ -226,73 +260,81 @@ const ReviewHeader = styled.div`
 
 const ReviewerName = styled.div`
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--galaxy-text-primary);
+  font-size: 1.05rem;
 `;
 
 const ReviewDate = styled.div`
   font-size: 0.875rem;
-  color: var(--text-tertiary);
+  color: var(--galaxy-text-secondary);
 `;
 
 const ReviewRating = styled.div`
   color: #FFD700;
   margin-bottom: var(--spacing-sm);
+  font-size: 1.1rem;
 `;
 
 const ReviewText = styled.p`
-  line-height: 1.6;
-  color: var(--text-secondary);
+  line-height: 1.68;
+  color: var(--galaxy-text-secondary);
   margin: 0;
+  font-size: 1rem;
 `;
 
 const SectionTitle = styled.h2`
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
+  font-family: var(--font-primary);
+  font-size: 1.75rem;
   margin-bottom: var(--spacing-xl);
-  color: var(--text-primary);
+  color: var(--galaxy-text-primary);
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  font-weight: 600;
   
   &::before {
     content: '';
     width: 4px;
-    height: 24px;
-    background: var(--accent-primary);
+    height: 28px;
+    background: var(--accent-gradient);
     border-radius: 2px;
   }
 `;
 
 const CastGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--spacing-xl);
 `;
 
 const CastCard = styled.div`
   text-align: center;
-  padding: var(--spacing-md);
-  background: var(--background-surface);
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: var(--border-radius-large);
-  transition: transform 0.2s ease;
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  transition: all 0.3s ease;
   
   &:hover {
     transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(102, 126, 234, 0.3);
   }
 `;
 
 const CastPhoto = styled.div`
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: var(--accent-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto var(--spacing-md) auto;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 600;
   color: white;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 `;
 
 const MovieDetailPage = () => {
@@ -448,7 +490,7 @@ useEffect(() => {
           </UserActions>
 
           <div>
-            <h4 style={{ margin: '0 0 1rem 0', color: 'var(--text-primary)' }}>Rate this movie:</h4>
+            <h4 style={{ margin: '0 0 1rem 0', color: 'var(--galaxy-text-primary)' }}>Rate this movie:</h4>
             <StarRating>
               {[1, 2, 3, 4, 5].map((star) => (
                 <StarButton
@@ -461,15 +503,15 @@ useEffect(() => {
                   ★
                 </StarButton>
               ))}
-              <span style={{ marginLeft: '1rem', color: 'var(--text-secondary)' }}>
+              <span style={{ marginLeft: '1rem', color: 'var(--galaxy-text-secondary)' }}>
                 {userRating > 0 ? `${userRating}/5 stars` : 'Click to rate'}
               </span>
             </StarRating>
           </div>
           
           <div>
-            <h3>Plot</h3>
-            <p>{movie.Plot}</p>
+            <h3 style={{ color: 'var(--galaxy-text-primary)', marginBottom: 'var(--spacing-md)' }}>Plot</h3>
+            <p style={{ color: 'var(--galaxy-text-secondary)', lineHeight: '1.68' }}>{movie.Plot}</p>
           </div>
         </MovieInfo>
       </MovieHeader>
@@ -480,9 +522,9 @@ useEffect(() => {
         
         {/* Write Review Form */}
         <ReviewForm>
-          <h3 style={{ marginTop: 0, marginBottom: 'var(--spacing-lg)', color: 'var(--text-primary)' }}>
+          <h3 style={{ marginTop: 0, marginBottom: 'var(--spacing-lg)', color: 'var(--galaxy-text-primary)' }}>
             Write a Review as {user?.username || 'Unknown User'}
-            </h3>
+          </h3>
           <ReviewTextarea
             placeholder="Share your thoughts about this movie... What did you like? What didn't work for you?"
             value={reviewText}
@@ -507,7 +549,7 @@ useEffect(() => {
               <ReviewHeader>
                 <ReviewerName>
                     {review.author}
-                    {review.user_id === user?.id && <span style={{ color: 'var(--accent-primary)', marginLeft: '8px' }}>(Your Review)</span>}
+                    {review.user_id === user?.id && <span style={{ color: 'rgba(102, 126, 234, 0.8)', marginLeft: '8px' }}>(Your Review)</span>}
                 </ReviewerName>
                 <ReviewDate>{review.date}</ReviewDate>
               </ReviewHeader>
@@ -530,8 +572,8 @@ useEffect(() => {
             {movie.Actors.split(', ').map((actor, index) => (
               <CastCard key={index}>
                 <CastPhoto>{getInitials(actor)}</CastPhoto>
-                <div style={{fontWeight: 600, fontSize: '0.875rem', marginBottom: '4px'}}>{actor}</div>
-                <div style={{color: 'var(--text-tertiary)', fontSize: '0.75rem'}}>Actor</div>
+                <div style={{fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px', color: 'var(--galaxy-text-primary)'}}>{actor}</div>
+                <div style={{color: 'var(--galaxy-text-secondary)', fontSize: '0.85rem'}}>Actor</div>
               </CastCard>
             ))}
           </CastGrid>

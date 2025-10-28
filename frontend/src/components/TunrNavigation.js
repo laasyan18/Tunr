@@ -137,7 +137,7 @@ const TunrNavigation = () => {
         />
         
         <NavLinks>
-          <NavLink onClick={() => navigate('/movies')}>MOVIES</NavLink>
+          <NavLink onClick={() => navigate('/search')}>MOVIES</NavLink>
           <NavLink onClick={() => navigate('/music')}>MUSIC</NavLink>
           <NavLink onClick={() => navigate('/collections')}>COLLECTIONS</NavLink>
           <NavLink onClick={() => navigate('/community')}>COMMUNITY</NavLink>

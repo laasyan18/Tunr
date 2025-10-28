@@ -1,13 +1,39 @@
 // SearchPage.js - Fixed version
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import TunrNavigation from './TunrNavigation';
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
 
 const SearchContainer = styled.div`
-  background: var(--background-primary);
-  padding: var(--spacing-xl);
-  border-bottom: 1px solid var(--border-primary);
+  background: linear-gradient(135deg, var(--galaxy-bg) 0%, #0a1942 50%, #081838 100%);
+  min-height: 100vh;
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  font-family: var(--font-primary);
+  animation: ${fadeIn} 0.6s ease-out;
+`;
+
+const SearchHeader = styled.div`
+  max-width: 800px;
+  margin: 0 auto var(--spacing-3xl) auto;
+  text-align: center;
+  padding-top: var(--spacing-xl);
+`;
+
+const SearchTitle = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  background: linear-gradient(135deg, #ffffff 0%, #e8ecf4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.022em;
 `;
 
 const SearchForm = styled.form`
@@ -18,22 +44,25 @@ const SearchForm = styled.form`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 1rem 3rem 1rem 1rem;
+  padding: 1.125rem 3.5rem 1.125rem 1.5rem;
   font-size: 1.125rem;
-  border-radius: 12px;
-  border: 2px solid var(--border-primary);
-  background: var(--background-surface);
-  color: var(--text-primary);
+  border-radius: var(--border-radius-full);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  color: var(--galaxy-text-primary);
   font-family: var(--font-primary);
+  transition: all 0.3s ease;
   
   &:focus {
     outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(8, 31, 92, 0.1);
+    border-color: rgba(102, 126, 234, 0.6);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
   }
   
   &::placeholder {
-    color: var(--text-tertiary);
+    color: var(--galaxy-text-secondary);
   }
 `;
 
@@ -96,10 +125,10 @@ const MagnifyIcon = styled.div`
 
 const MoviesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  padding: 1rem;
-  max-width: 1200px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  max-width: 1400px;
   margin: 0 auto;
 `;
 
@@ -107,42 +136,50 @@ const MovieCard = styled.div`
   cursor: pointer;
   font-family: var(--font-primary);
   text-align: center;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-large);
+  padding: var(--spacing-md);
+  border: 1px solid rgba(102, 126, 234, 0.15);
   
   &:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(102, 126, 234, 0.4);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
   }
 `;
 
 const MoviePoster = styled.img`
   width: 100%;
-  height: 170px;
+  height: 220px;
   object-fit: cover;
-  border-radius: 6px;
-  margin-bottom: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 `;
 
 const MovieTitle = styled.div`
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--galaxy-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-xs);
 `;
 
 const MovieYear = styled.div`
-  font-size: 0.7rem;
-  color: var(--text-secondary);
+  font-size: 0.8rem;
+  color: var(--galaxy-text-secondary);
 `;
 
 const LoadingText = styled.p`
   text-align: center;
-  color: var(--text-tertiary);
+  color: var(--galaxy-text-secondary);
   font-family: var(--font-primary);
-  margin: 2rem 0;
+  margin: 3rem 0;
+  font-size: 1.125rem;
 `;
 
 axios.interceptors.request.use(request => {
@@ -224,22 +261,25 @@ const SearchPage = () => {
 
   return (
     <>
+      <TunrNavigation />
       <SearchContainer>
-        <SearchForm onSubmit={handleSubmit}>
-          <SearchInput
-            type="text"
-            placeholder="Search for movies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            autoFocus
-            spellCheck={false}
-          />
-          {/* Custom search button - change the text/icon to whatever you want */}
-          <SearchButton type="submit">
-            <MagnifyIcon />
-            </SearchButton>
-        </SearchForm>
-      </SearchContainer>
+        <SearchHeader>
+          <SearchTitle>🎬 Discover Movies</SearchTitle>
+        </SearchHeader>
+      
+      <SearchForm onSubmit={handleSubmit}>
+        <SearchInput
+          type="text"
+          placeholder="Search for movies..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          autoFocus
+          spellCheck={false}
+        />
+        <SearchButton type="submit">
+          <MagnifyIcon />
+        </SearchButton>
+      </SearchForm>
 
       {loading && <LoadingText>Searching...</LoadingText>}
 
@@ -257,14 +297,13 @@ const SearchPage = () => {
               alt={movie.Title}
             />
             <MovieTitle>
-              {movie.Title.length > 16 ? movie.Title.slice(0, 16) + '...' : movie.Title}
+              {movie.Title.length > 20 ? movie.Title.slice(0, 20) + '...' : movie.Title}
             </MovieTitle>
             <MovieYear>{movie.Year}</MovieYear>
           </MovieCard>
         ))}
       </MoviesGrid>
 
-      {/* Only show "No movies found" AFTER user has searched */}
       {hasSearched && searchQuery.length >= 2 && movies.length === 0 && !loading && (
         <LoadingText>No movies found for "{searchQuery}". Try a different search term.</LoadingText>
       )}
@@ -272,8 +311,7 @@ const SearchPage = () => {
       {!hasSearched && (
         <LoadingText>Enter a movie title above to start searching</LoadingText>
       )}
-
-    
+    </SearchContainer>
     </>
   );
 };

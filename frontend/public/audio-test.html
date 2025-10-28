@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Test - Spotify Preview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .test-container {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #4ecca3;
+        }
+        button {
+            background: #4ecca3;
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #45b393;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #0f3460;
+            border-radius: 8px;
+            border-left: 4px solid #4ecca3;
+        }
+        .info {
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎵 Spotify Audio Preview Test</h1>
+        <p>This page tests if your browser can play Spotify 30-second previews.</p>
+        
+        <div>
+            <button id="testBtn">▶ Test Audio Playback</button>
+            <button id="stopBtn" disabled>⏸ Stop Audio</button>
+        </div>
+        
+        <div class="status" id="status">
+            Click "Test Audio Playback" to begin...
+        </div>
+
+        <div class="info">
+            <h3>Troubleshooting Tips:</h3>
+            <ul>
+                <li><strong>No sound?</strong> Check your volume and make sure it's not muted</li>
+                <li><strong>Autoplay blocked?</strong> Some browsers block autoplay. Click the button to manually start</li>
+                <li><strong>Still not working?</strong> Try a different browser (Chrome, Firefox, Edge)</li>
+                <li><strong>CORS errors?</strong> Make sure both frontend and backend servers are running</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Sample Spotify preview URL (Dua Lipa - Levitating)
+        const PREVIEW_URL = 'https://p.scdn.co/mp3-preview/6e0f8bc7cd73ce625e9eb6e2e7a71e81e753e7a7';
+        
+        let audio = null;
+        const testBtn = document.getElementById('testBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const status = document.getElementById('status');
+
+        testBtn.addEventListener('click', async () => {
+            try {
+                status.innerHTML = '⏳ Loading audio...';
+                status.style.borderLeftColor = '#f39c12';
+                
+                // Stop any existing audio
+                if (audio) {
+                    audio.pause();
+                    audio = null;
+                }
+
+                // Create new audio
+                audio = new Audio(PREVIEW_URL);
+                
+                // Set up event handlers
+                audio.onloadeddata = () => {
+                    status.innerHTML = '✅ Audio loaded successfully! Duration: ' + Math.round(audio.duration) + ' seconds';
+                    status.style.borderLeftColor = '#4ecca3';
+                };
+
+                audio.onplay = () => {
+                    status.innerHTML = '🎵 Playing preview... (this will play for 30 seconds)';
+                    status.style.borderLeftColor = '#4ecca3';
+                    testBtn.disabled = true;
+                    stopBtn.disabled = false;
+                };
+
+                audio.onended = () => {
+                    status.innerHTML = '✅ Preview finished! Audio playback works correctly.';
+                    status.style.borderLeftColor = '#4ecca3';
+                    testBtn.disabled = false;
+                    stopBtn.disabled = true;
+                };
+
+                audio.onerror = (error) => {
+                    console.error('Audio error:', error);
+                    status.innerHTML = '❌ Error loading audio. Check console for details.';
+                    status.style.borderLeftColor = '#e74c3c';
+                    testBtn.disabled = false;
+                    stopBtn.disabled = true;
+                };
+
+                // Try to play
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            console.log('✅ Playback started successfully');
+                        })
+                        .catch((error) => {
+                            console.error('❌ Playback failed:', error);
+                            status.innerHTML = '⚠️ Browser blocked autoplay. Click "Test Audio Playback" again to play.';
+                            status.style.borderLeftColor = '#e74c3c';
+                            testBtn.disabled = false;
+                        });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                status.innerHTML = '❌ Error: ' + error.message;
+                status.style.borderLeftColor = '#e74c3c';
+                testBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+                status.innerHTML = '⏸ Audio stopped.';
+                status.style.borderLeftColor = '#f39c12';
+                testBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        });
+
+        // Log browser info
+        console.log('Browser:', navigator.userAgent);
+        console.log('Audio support:', typeof Audio !== 'undefined' ? '✅ Yes' : '❌ No');
+    </script>
+</body>
+</html>
