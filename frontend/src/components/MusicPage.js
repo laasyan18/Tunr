@@ -772,7 +772,12 @@ const MusicPage = () => {
   };
 
   const loginWithSpotify = () => {
-    window.location.href = 'http://127.0.0.1:8000/spotify/login/';
+    // If user has an API token stored (from login), pass it as state so backend can link Spotify to the Tunr user
+    const token = localStorage.getItem('token');
+    const url = token
+      ? `http://127.0.0.1:8000/spotify/login/?state=${encodeURIComponent(token)}`
+      : 'http://127.0.0.1:8000/spotify/login/';
+    window.location.href = url;
   };
 
   // Login screen

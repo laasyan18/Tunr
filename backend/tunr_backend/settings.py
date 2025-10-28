@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from decouple import config, Csv
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static file serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -67,12 +69,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'tunr_backend.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database - use Postgres in production (DATABASE_URL), SQLite locally
+DATABASE_URL = config('DATABASE_URL', default=None)
+if DATABASE_URL:
+    # Production: Parse DATABASE_URL for Postgres
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    # Development: Use SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -94,8 +105,11 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # For collectstatic (production)
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -103,17 +117,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings for React
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",      # React dev server
-    "http://127.0.0.1:3000",     # Alternative React dev server
-    "http://localhost:8000",      # Add this for consistency
-    "http://127.0.0.1:8000",
-]
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000',
+    cast=Csv()
+)
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000',
+    cast=Csv()
+)
 
 
 CORS_ALLOW_CREDENTIALS = True
@@ -133,6 +147,8 @@ REST_FRAMEWORK = {
     #],
 }
 
-OMDB_API_KEY = 'eada15a9'
-SPOTIFY_CLIENT_ID = '09d32991c5e0478cb1c5d3e319569e5f'
-SPOTIFY_CLIENT_SECRET = '4689f3f85c5c45b695b9f204f3cc2125'
+# External API keys and secrets — read from environment. Create a backend/.env file
+# See backend/.env.example for variable names
+OMDB_API_KEY = config('OMDB_API_KEY', default='')
+SPOTIFY_CLIENT_ID = config('SPOTIFY_CLIENT_ID', default='')
+SPOTIFY_CLIENT_SECRET = config('SPOTIFY_CLIENT_SECRET', default='')

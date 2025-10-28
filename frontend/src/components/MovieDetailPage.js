@@ -376,9 +376,13 @@ const MovieDetailPage = () => {
     // Fetch movie data - your existing fetch logic
     const fetchMovie = async () => {
       try {
-        setLoading(true);
-        const apiKey = 'eada15a9';
-        const response = await fetch(`http://www.omdbapi.com/?i=${id}&apikey=${apiKey}`);
+          setLoading(true);
+          // Read OMDB key from environment (REACT_APP_ prefix required for CRA)
+          const apiKey = process.env.REACT_APP_OMDB_API_KEY;
+          if (!apiKey) {
+            console.warn('OMDB API key not found. Set REACT_APP_OMDB_API_KEY in frontend/.env.local or in your environment.');
+          }
+          const response = await fetch(`http://www.omdbapi.com/?i=${id}&apikey=${apiKey}`);
         const data = await response.json();
         
         if (data.Response !== 'False') {

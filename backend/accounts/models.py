@@ -10,6 +10,12 @@ class CustomUser(AbstractUser):
     bio = models.TextField(max_length=500, blank=True)
     preferred_languages = models.CharField(max_length=300, blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    # Spotify integration fields
+    spotify_id = models.CharField(max_length=128, blank=True, null=True)
+    spotify_display_name = models.CharField(max_length=255, blank=True, null=True)
+    spotify_access_token = models.TextField(blank=True, null=True)
+    spotify_refresh_token = models.TextField(blank=True, null=True)
+    spotify_token_expires = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)   # set once on create
     updated_at = models.DateTimeField(auto_now=True) 
     
