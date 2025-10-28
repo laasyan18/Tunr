@@ -129,6 +129,10 @@ CSRF_TRUSTED_ORIGINS = config(
     cast=Csv()
 )
 
+# Add admin path exemption for CSRF
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 
 CORS_ALLOW_CREDENTIALS = True
 
