@@ -1,0 +1,31 @@
+# Node
+node_modules/
+frontend/node_modules/
+frontend/build/
+
+# Python virtual env and caches
+/envutunr/
+venv/
+ENV/
+env/
+*.pyc
+__pycache__/
+
+# Django
+backend/db.sqlite3
+media/
+staticfiles/
+
+# Env files
+.env
+backend/.env
+frontend/.env.local
+frontend/.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
