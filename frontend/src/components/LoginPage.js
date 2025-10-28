@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
+import API_URL from '../config';
 
 
 const LoginContainer = styled.div`
@@ -90,7 +91,7 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
   e.preventDefault();
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
+    const response = await axios.post(`${API_URL}/api/auth/login/`, {
       username, password
     });
     

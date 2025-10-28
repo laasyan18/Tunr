@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import TunrNavigation from './TunrNavigation';
+import API_URL from '../config';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -663,7 +664,7 @@ const MusicPage = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/spotify/user/', {
+      const response = await fetch(`${API_URL}/api/spotify/user/`, {
         credentials: 'include'
       });
       
@@ -688,7 +689,7 @@ const MusicPage = () => {
 
   const fetchUserPlaylists = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/spotify/playlists/', {
+      const response = await fetch(`${API_URL}/api/spotify/playlists/`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -702,7 +703,7 @@ const MusicPage = () => {
 
   const fetchTopTracks = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/spotify/top-tracks/', {
+      const response = await fetch(`${API_URL}/api/spotify/top-tracks/`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -716,7 +717,7 @@ const MusicPage = () => {
 
   const fetchRecentlyPlayed = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/spotify/recently-played/', {
+      const response = await fetch(`${API_URL}/api/spotify/recently-played/`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -730,7 +731,7 @@ const MusicPage = () => {
 
   const fetchFollowing = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/spotify/following/', {
+      const response = await fetch(`${API_URL}/api/spotify/following/`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -750,7 +751,7 @@ const MusicPage = () => {
     
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/spotify/search/?q=${encodeURIComponent(searchQuery)}`,
+        `${API_URL}/api/spotify/search/?q=${encodeURIComponent(searchQuery)}`,
         { credentials: 'include' }
       );
       
@@ -775,8 +776,8 @@ const MusicPage = () => {
     // If user has an API token stored (from login), pass it as state so backend can link Spotify to the Tunr user
     const token = localStorage.getItem('token');
     const url = token
-      ? `http://127.0.0.1:8000/spotify/login/?state=${encodeURIComponent(token)}`
-      : 'http://127.0.0.1:8000/spotify/login/';
+      ? `${API_URL}/spotify/login/?state=${encodeURIComponent(token)}`
+      : `${API_URL}/spotify/login/`;
     window.location.href = url;
   };
 

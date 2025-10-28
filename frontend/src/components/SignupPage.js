@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../config';
 
 const Container = styled.div`
   background-color: var(--background-primary);
@@ -173,7 +174,7 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const signupRes = await axios.post('http://127.0.0.1:8000/api/auth/signup/', {
+      const signupRes = await axios.post(`${API_URL}/api/auth/signup/`, {
         username: form.username.trim(),
         email: form.email.trim(),
         password: form.password
@@ -186,7 +187,7 @@ export default function SignupPage() {
         return;
       }
 
-      const loginRes = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
+      const loginRes = await axios.post(`${API_URL}/api/auth/login/`, {
         username: form.username.trim(),
         password: form.password
       });

@@ -4,6 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TunrNavigation from './TunrNavigation';
+import API_URL from '../config';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -244,7 +245,7 @@ const SearchPage = () => {
     
     try {
       // Change this line (around line 113)
-      const response = await axios.get(`http://127.0.0.1:8000/api/movies/search/?query=${encodeURIComponent(actualQuery.trim())}`);
+      const response = await axios.get(`${API_URL}/api/movies/search/?query=${encodeURIComponent(actualQuery.trim())}`);
       setMovies(response.data.movies || []);
     } catch (error) {
       console.error('Search failed:', error);

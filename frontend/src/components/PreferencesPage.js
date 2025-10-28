@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -187,7 +188,7 @@ const PreferencesPage = () => {
     
     try {
       // Save preferences to backend
-      await axios.post('http://127.0.0.1:8000/api/auth/profile/', {
+      await axios.post(`${API_URL}/api/auth/profile/`, {
         preferred_languages: selectedLanguages.join(', ')
       });
       
