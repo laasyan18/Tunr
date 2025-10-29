@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useParams } from 'react-router-dom';
+import API_URL from '../config';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -377,12 +378,8 @@ const MovieDetailPage = () => {
     const fetchMovie = async () => {
       try {
           setLoading(true);
-          // Read OMDB key from environment (REACT_APP_ prefix required for CRA)
-          const apiKey = process.env.REACT_APP_OMDB_API_KEY;
-          if (!apiKey) {
-            console.warn('OMDB API key not found. Set REACT_APP_OMDB_API_KEY in frontend/.env.local or in your environment.');
-          }
-          const response = await fetch(`http://www.omdbapi.com/?i=${id}&apikey=${apiKey}`);
+          // Use backend API endpoint instead of calling OMDB directly
+          const response = await fetch(`${API_URL}/api/movies/details/${id}/`);
         const data = await response.json();
         
         if (data.Response !== 'False') {

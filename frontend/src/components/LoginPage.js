@@ -90,15 +90,17 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
   e.preventDefault();
+  setLoading(true);
   try {
     const response = await axios.post(`${API_URL}/api/auth/login/`, {
       username, password
     });
     
-    // Save authentication data
-    localStorage.setItem('authToken', response.data.token);
+    // Save authentication data - use 'token' consistently across the app
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('authToken', response.data.token); // Keep for compatibility
     localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('username', response.data.user.username);
+    localStorage.setItem('user', JSON.stringify(response.data.user)); // Store full user object
     
     setMessage(`Welcome back, ${response.data.user.username}! 🎵🎬`);
     
@@ -116,6 +118,8 @@ const LoginPage = () => {
     } else {
       setMessage('Login failed. Please check your internet connection.');
     }
+  } finally {
+    setLoading(false);
   }
 };
 
