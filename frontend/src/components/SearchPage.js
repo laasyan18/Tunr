@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TunrNavigation from './TunrNavigation';
 import API_URL from '../config';
 
 const fadeIn = keyframes`
@@ -261,12 +260,10 @@ const SearchPage = () => {
   };
 
   return (
-    <>
-      <TunrNavigation />
-      <SearchContainer>
-        <SearchHeader>
-          <SearchTitle>🎬 Discover Movies</SearchTitle>
-        </SearchHeader>
+    <SearchContainer>
+      <SearchHeader>
+        <SearchTitle>🎬 Discover Movies</SearchTitle>
+      </SearchHeader>
       
       <SearchForm onSubmit={handleSubmit}>
         <SearchInput
@@ -313,7 +310,6 @@ const SearchPage = () => {
         <LoadingText>Enter a movie title above to start searching</LoadingText>
       )}
     </SearchContainer>
-    </>
   );
 };
 

@@ -20,6 +20,7 @@ urlpatterns = [
     path('', api_root, name='api_root'),  # Root endpoint
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
+    path('api/accounts/', include('accounts.urls')),  # Social features
     path('api/movies/', include('movies.urls')), 
     path('spotify/', include('music.urls')),  # Spotify routes
     path('callback/', spotify_callback, name='spotify_callback'),  # For the callback

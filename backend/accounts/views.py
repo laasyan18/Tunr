@@ -6,11 +6,13 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, logout
+from django.views.decorators.csrf import csrf_exempt
 from .models import CustomUser
 import json
 
 # SIGNUP - NO AUTHENTICATION REQUIRED
 @api_view(['POST'])
+@csrf_exempt
 def signup_view(request):
     try:
         data = request.data
@@ -68,6 +70,7 @@ def signup_view(request):
 
 # LOGIN - NO AUTHENTICATION REQUIRED
 @api_view(['POST'])
+@csrf_exempt
 def login_view(request):
     try:
         data = request.data

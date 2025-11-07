@@ -92,9 +92,12 @@ const LoginPage = () => {
   e.preventDefault();
   setLoading(true);
   try {
+    console.log('Attempting login to:', `${API_URL}/api/auth/login/`);
     const response = await axios.post(`${API_URL}/api/auth/login/`, {
       username, password
     });
+    
+    console.log('Login response:', response.data);
     
     // Save authentication data - use 'token' consistently across the app
     localStorage.setItem('token', response.data.token);
@@ -111,12 +114,16 @@ const LoginPage = () => {
     }, 1000); // Small delay to show welcome message
     
   } catch (error) {
+    console.error('Login error:', error);
+    console.error('Error response:', error.response);
+    console.error('Error message:', error.message);
+    
     if (error.response?.status === 401) {
       setMessage('Invalid username or password. Please try again.');
     } else if (error.response?.status === 400) {
       setMessage('Please check your credentials and try again.');
     } else {
-      setMessage('Login failed. Please check your internet connection.');
+      setMessage(`Login failed: ${error.message || 'Please check your internet connection.'}`);
     }
   } finally {
     setLoading(false);

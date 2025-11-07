@@ -346,7 +346,7 @@ const MovieDetailPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   // User interaction states
-  const [liked, setLiked] = useState(false);
+  const [loved, setLoved] = useState(false);
   const [watched, setWatched] = useState(false);
   const [wantToWatch, setWantToWatch] = useState(false);
   const [userRating, setUserRating] = useState(0);
@@ -354,95 +354,221 @@ const MovieDetailPage = () => {
   
   // Review states
   const [reviewText, setReviewText] = useState('');
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      author: 'MovieBuff2023',
-      rating: 4,
-      text: 'An incredible cinematic experience! The visuals were stunning and the story kept me engaged throughout.',
-      date: '2 days ago'
-    },
-    {
-      id: 2,
-      author: 'CinemaLover',
-      rating: 5,
-      text: 'Perfect blend of action and emotion. One of the best films I\'ve seen this year!',
-      date: '1 week ago'
-    }
-  ]);
+  const [reviews, setReviews] = useState([]);
+  const [hasReviewed, setHasReviewed] = useState(false);
   
-  const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 1000));
+  // Stats
+  const [stats, setStats] = useState({
+    average_rating: 0,
+    total_reviews: 0,
+    watched_count: 0,
+    want_to_watch_count: 0,
+    love_count: 0
+  });
 
   useEffect(() => {
-    // Fetch movie data - your existing fetch logic
-    const fetchMovie = async () => {
-      try {
-          setLoading(true);
-          // Use backend API endpoint instead of calling OMDB directly
-          const response = await fetch(`${API_URL}/api/movies/details/${id}/`);
-        const data = await response.json();
-        
-        if (data.Response !== 'False') {
-          setMovie(data);
-        }
-      } catch (error) {
-        console.error('Error fetching movie:', error);
-      } finally {
-        setLoading(false);
-      }
-      
-    };
-
-    if (id) fetchMovie();
+    fetchMovie();
+    fetchMovieStats();
+    fetchReviews();
   }, [id]);
 
-  // Update your debug useEffect to actually set the user state
-useEffect(() => {
-  console.log('=== DEBUG: Checking localStorage ===');
-  console.log('Token:', localStorage.getItem('token'));
-  console.log('User data:', localStorage.getItem('user'));
-  
-  const token = localStorage.getItem('token');
-  const userData = localStorage.getItem('user');
-  
-  if (token && userData) {
+  const fetchMovie = async () => {
     try {
-      const parsedUser = JSON.parse(userData);
-      console.log('Parsed user:', parsedUser);
-      console.log('Username:', parsedUser.username);
+      setLoading(true);
+      const response = await fetch(`${API_URL}/api/movies/details/${id}/`);
+      const data = await response.json();
       
-      // ACTUALLY SET THE STATE ⬇️
-      setUser(parsedUser);
-      setIsAuthenticated(true);
-      
+      if (data.Response !== 'False') {
+        setMovie(data);
+      }
     } catch (error) {
-      console.error('Error parsing user data:', error);
+      console.error('Error fetching movie:', error);
+    } finally {
+      setLoading(false);
     }
-  } else {
-    console.log('No user data found - user not logged in');
-    setUser(null);
-    setIsAuthenticated(false);
-  }
-  console.log('=== END DEBUG ===');
-}, []);
+  };
 
+  const fetchMovieStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Token ${token}` } : {};
+      
+      const response = await fetch(`${API_URL}/api/movies/stats/${id}/`, { headers });
+      const data = await response.json();
+      
+      setStats(data);
+      
+      // Update user interactions if logged in
+      if (data.user_interactions) {
+        setWatched(data.user_interactions.watched || false);
+        setWantToWatch(data.user_interactions.want_to_watch || false);
+        setLoved(data.user_interactions.love || false);
+        setHasReviewed(data.user_interactions.has_reviewed || false);
+        setUserRating(data.user_interactions.user_rating || 0);
+        setReviewText(data.user_interactions.user_review_text || '');
+      }
+    } catch (error) {
+      console.error('Error fetching movie stats:', error);
+    }
+  };
 
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/movies/reviews/movie/${id}/`);
+      const data = await response.json();
+      
+      if (data.reviews) {
+        setReviews(data.reviews);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
 
-  const handlePostReview = () => {
-    if (reviewText.trim().length < 10) return;
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
     
-    const newReview = {
-    id: Date.now(), // Temporary ID
-    author: user?.username || 'Anonymous', // Use actual username here
-    rating: userRating,
-    text: reviewText,
-    date: 'Just now',
-    user_id: user?.id
-    };
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    } else {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+
+
+  const handlePostReview = async () => {
+    const token = localStorage.getItem('token');
     
-    setReviews([newReview, ...reviews]);
-    setReviewText('');
-    setWatched(true); // Auto-mark as watched when reviewing
+    if (!token) {
+      alert('Please login to leave a review');
+      return;
+    }
+    
+    if (userRating === 0) {
+      alert('Please select a rating');
+      return;
+    }
+    
+    if (reviewText.trim().length < 10) {
+      alert('Review must be at least 10 characters');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_URL}/api/movies/reviews/create/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({
+          imdb_id: id,
+          title: movie.Title,
+          rating: userRating,
+          review_text: reviewText
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(data.message);
+        setHasReviewed(true);
+        setWatched(true); // Auto-marked as watched by backend
+        fetchReviews();
+        fetchMovieStats();
+      } else {
+        alert(data.error || 'Failed to submit review');
+      }
+    } catch (error) {
+      console.error('Error posting review:', error);
+      alert('Failed to post review');
+    }
+  };
+
+  const toggleWatchState = async (state) => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      alert('Please login to use this feature');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_URL}/api/movies/watch-state/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({
+          imdb_id: id,
+          state: state,
+          title: movie.Title,
+          year: movie.Year,
+          poster: movie.Poster,
+          genre: movie.Genre
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        if (state === 'watched') {
+          setWatched(data.action === 'added');
+          if (data.action === 'added') setWantToWatch(false);
+        } else {
+          setWantToWatch(data.action === 'added');
+          if (data.action === 'added') setWatched(false);
+        }
+        fetchMovieStats();
+      }
+    } catch (error) {
+      console.error('Error toggling watch state:', error);
+    }
+  };
+
+  const toggleLove = async () => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      alert('Please login to use this feature');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_URL}/api/movies/toggle-like/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({
+          imdb_id: id,
+          type: 'love'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setLoved(data.action === 'added');
+        fetchMovieStats();
+      }
+    } catch (error) {
+      console.error('Error toggling love:', error);
+    }
   };
 
   const getInitials = (name) => {
@@ -472,44 +598,26 @@ useEffect(() => {
           </div>
           
           <MovieStats>
-            <Stat><span className="icon">⭐</span><span>{movie.imdbRating}/10 IMDb</span></Stat>
-            <Stat><span className="icon">❤️</span><span>{likeCount.toLocaleString()} likes</span></Stat>
-            <Stat><span className="icon">📝</span><span>{reviews.length} reviews</span></Stat>
-            <Stat><span className="icon">🎬</span><span>{movie.Runtime}</span></Stat>
+            <Stat><span className="icon">★</span><span>{movie.imdbRating}/10 IMDb</span></Stat>
+            <Stat><span className="icon">★</span><span>{stats.average_rating > 0 ? `${stats.average_rating.toFixed(1)}/5` : 'No ratings'} User Rating</span></Stat>
+            <Stat><span className="icon">♥</span><span>{stats.love_count} loves</span></Stat>
+            <Stat><span className="icon">✎</span><span>{stats.total_reviews} reviews</span></Stat>
+            <Stat><span className="icon">●</span><span>{stats.watched_count} watched</span></Stat>
+            <Stat><span className="icon">◷</span><span>{movie.Runtime}</span></Stat>
           </MovieStats>
 
           <UserActions>
-            <ActionButton active={liked} onClick={() => setLiked(!liked)}>
-              ❤️ {liked ? 'Loved' : 'Like'}
+            <ActionButton active={loved} onClick={toggleLove}>
+              {loved ? '♥ Loved' : '♡ Love'}
             </ActionButton>
-            <ActionButton active={watched} onClick={() => setWatched(!watched)}>
-              👁️ {watched ? 'Watched' : 'Watch'}
+            <ActionButton active={watched} onClick={() => toggleWatchState('watched')}>
+              {watched ? '✓ Watched' : 'Mark as Watched'}
             </ActionButton>
-            <ActionButton active={wantToWatch} onClick={() => setWantToWatch(!wantToWatch)}>
-              🎯 {wantToWatch ? 'Want to Watch' : 'Watchlist'}
+            <ActionButton active={wantToWatch} onClick={() => toggleWatchState('want_to_watch')}>
+              {wantToWatch ? '✓ Watchlist' : 'Add to Watchlist'}
             </ActionButton>
           </UserActions>
 
-          <div>
-            <h4 style={{ margin: '0 0 1rem 0', color: 'var(--galaxy-text-primary)' }}>Rate this movie:</h4>
-            <StarRating>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <StarButton
-                  key={star}
-                  filled={star <= (hoverRating || userRating)}
-                  onClick={() => setUserRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                >
-                  ★
-                </StarButton>
-              ))}
-              <span style={{ marginLeft: '1rem', color: 'var(--galaxy-text-secondary)' }}>
-                {userRating > 0 ? `${userRating}/5 stars` : 'Click to rate'}
-              </span>
-            </StarRating>
-          </div>
-          
           <div>
             <h3 style={{ color: 'var(--galaxy-text-primary)', marginBottom: 'var(--spacing-md)' }}>Plot</h3>
             <p style={{ color: 'var(--galaxy-text-secondary)', lineHeight: '1.68' }}>{movie.Plot}</p>
@@ -519,49 +627,93 @@ useEffect(() => {
 
       {/* REVIEW SECTION */}
       <ReviewSection>
-        <SectionTitle>Reviews ({reviews.length})</SectionTitle>
+        <SectionTitle>Reviews ({stats.total_reviews})</SectionTitle>
         
-        {/* Write Review Form */}
-        <ReviewForm>
-          <h3 style={{ marginTop: 0, marginBottom: 'var(--spacing-lg)', color: 'var(--galaxy-text-primary)' }}>
-            Write a Review as {user?.username || 'Unknown User'}
-          </h3>
-          <ReviewTextarea
-            placeholder="Share your thoughts about this movie... What did you like? What didn't work for you?"
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            maxLength={1000}
-          />
-          <ReviewActions>
-            <CharacterCount>{reviewText.length}/1000 characters</CharacterCount>
-            <PostButton 
-              onClick={handlePostReview}
-              disabled={reviewText.trim().length < 10}
-            >
-              Post Review
-            </PostButton>
-          </ReviewActions>
-        </ReviewForm>
+        {/* Write Review Form - Only show if logged in and watched */}
+        {isAuthenticated && watched && (
+          <ReviewForm>
+            <h3 style={{ marginTop: 0, marginBottom: 'var(--spacing-lg)', color: 'var(--galaxy-text-primary)' }}>
+              {hasReviewed ? 'Update Your Review' : 'Write a Review'}
+            </h3>
+            
+            <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+              <h4 style={{ margin: '0 0 var(--spacing-sm) 0', color: 'var(--galaxy-text-primary)' }}>Your Rating:</h4>
+              <StarRating>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <StarButton
+                    key={star}
+                    filled={star <= (hoverRating || userRating)}
+                    onClick={() => setUserRating(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                  >
+                    ★
+                  </StarButton>
+                ))}
+                <span style={{ marginLeft: 'var(--spacing-md)', color: 'var(--galaxy-text-secondary)' }}>
+                  {userRating > 0 ? `${userRating}/5 stars` : 'Click to rate'}
+                </span>
+              </StarRating>
+            </div>
+            
+            <ReviewTextarea
+              placeholder="Share your thoughts about this movie... What did you like? What didn't work for you?"
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              maxLength={1000}
+            />
+            <ReviewActions>
+              <CharacterCount>{reviewText.length}/1000 characters (min 10)</CharacterCount>
+              <PostButton 
+                onClick={handlePostReview}
+                disabled={reviewText.trim().length < 10 || userRating === 0}
+              >
+                {hasReviewed ? 'Update Review' : 'Post Review'}
+              </PostButton>
+            </ReviewActions>
+          </ReviewForm>
+        )}
+        
+        {/* Show message if not logged in or not watched */}
+        {!isAuthenticated && (
+          <ReviewForm>
+            <p style={{ textAlign: 'center', color: 'var(--galaxy-text-secondary)', margin: 0 }}>
+              Please <a href="/login" style={{ color: 'var(--accent-blue)' }}>login</a> to leave a review
+            </p>
+          </ReviewForm>
+        )}
+        
+        {isAuthenticated && !watched && (
+          <ReviewForm>
+            <p style={{ textAlign: 'center', color: 'var(--galaxy-text-secondary)', margin: 0 }}>
+              Mark this movie as watched to leave a review
+            </p>
+          </ReviewForm>
+        )}
 
         {/* Reviews List */}
         <ReviewsList>
-          {reviews.map((review) => (
-            <ReviewCard key={review.id}>
-              <ReviewHeader>
-                <ReviewerName>
-                    {review.author}
-                    {review.user_id === user?.id && <span style={{ color: 'rgba(102, 126, 234, 0.8)', marginLeft: '8px' }}>(Your Review)</span>}
-                </ReviewerName>
-                <ReviewDate>{review.date}</ReviewDate>
-              </ReviewHeader>
-              {review.rating > 0 && (
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <ReviewCard key={review.id}>
+                <ReviewHeader>
+                  <ReviewerName>
+                    {review.user.username}
+                    {review.user.id === user?.id && <span style={{ color: 'rgba(102, 126, 234, 0.8)', marginLeft: '8px' }}>(Your Review)</span>}
+                  </ReviewerName>
+                  <ReviewDate>{new Date(review.created_at).toLocaleDateString()}</ReviewDate>
+                </ReviewHeader>
                 <ReviewRating>
                   {'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)} {review.rating}/5
                 </ReviewRating>
-              )}
-              <ReviewText>{review.text}</ReviewText>
-            </ReviewCard>
-          ))}
+                {review.review_text && <ReviewText>{review.review_text}</ReviewText>}
+              </ReviewCard>
+            ))
+          ) : (
+            <p style={{ textAlign: 'center', color: 'var(--galaxy-text-secondary)', padding: 'var(--spacing-2xl)' }}>
+              No reviews yet. Be the first to review!
+            </p>
+          )}
         </ReviewsList>
       </ReviewSection>
 

@@ -17,7 +17,9 @@ class CustomUser(AbstractUser):
     spotify_refresh_token = models.TextField(blank=True, null=True)
     spotify_token_expires = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)   # set once on create
-    updated_at = models.DateTimeField(auto_now=True) 
+    updated_at = models.DateTimeField(auto_now=True)
+    # Social features
+    following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     
     def __str__(self):
         return self.username

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'tunr_backend',
     'movies',
+    'music',  # Spotify music integration
 ]
 
 MIDDLEWARE = [
@@ -119,19 +120,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings for React
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://127.0.0.1:3000',
+    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
     cast=Csv()
 )
 
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost:3000,http://127.0.0.1:3000',
+    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
     cast=Csv()
 )
 
 # Add admin path exemption for CSRF
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
 
 CORS_ALLOW_CREDENTIALS = True
